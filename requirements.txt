@@ -4,5 +4,5 @@ python-decouple==3.8
 mercadopago==3.6.0
 
 # Producao
-gunicorn==23.0.0
-whitenoise==6.8.2
+gunicorn==26.2.0
+whitenoise==6.12.0
