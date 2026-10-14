@@ -1,0 +1,43 @@
+{% extends 'loja/base.html' %}
+
+{% block titulo %}Pagamento indisponível{% endblock %}
+
+{% block conteudo %}
+<section class="container secao">
+    <div class="caixa">
+        <span class="icone">🔧</span>
+        <h1>Pagamento ainda não configurado</h1>
+        <p>O pedido <strong>#{{ pedido.pk }}</strong> foi registrado, mas a loja ainda não está conectada ao Mercado Pago.</p>
+        <div class="instrucoes">
+            <p><strong>Para ativar o pagamento:</strong></p>
+            <ol>
+                <li>Pegue as credenciais em <code>mercadopago.com.br/developers/panel</code></li>
+                <li>Coloque no arquivo <code>.env</code>:
+                    <pre>MP_ACCESS_TOKEN=seu_token
+MP_PUBLIC_KEY=sua_chave
+MP_WEBHOOK_SECRET=seu_segredo</pre>
+                </li>
+                <li>Reinicie o servidor</li>
+            </ol>
+        </div>
+        <a href="{% url 'catalogo' %}" class="btn btn-primario">Voltar à loja</a>
+    </div>
+</section>
+
+<style>
+.secao { padding: 56px 0 30px; }
+.caixa {
+    max-width: 620px; margin: 0 auto; text-align: center;
+    background: #fff; border: 1px solid var(--borda);
+    border-radius: var(--radius); padding: 44px 32px;
+}
+.icone { font-size: 3rem; display: block; margin-bottom: 16px; }
+.caixa h1 { font-size: 1.5rem; margin-bottom: 12px; }
+.caixa > p { color: var(--texto-suave); margin-bottom: 24px; }
+.instrucoes { text-align: left; background: var(--creme-2); border-radius: 10px; padding: 20px 24px; margin-bottom: 26px; font-size: .9rem; }
+.instrucoes ol { padding-left: 20px; margin: 10px 0 0; }
+.instrucoes li { margin-bottom: 10px; }
+.instrucoes code { background: #fff; padding: 2px 6px; border-radius: 5px; font-size: .85rem; }
+.instrucoes pre { background: #fff; padding: 12px; border-radius: 8px; font-size: .82rem; overflow-x: auto; margin: 8px 0 0; }
+</style>
+{% endblock %}

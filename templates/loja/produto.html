@@ -1,0 +1,115 @@
+{% extends 'loja/base.html' %}
+
+{% block titulo %}{{ produto.nome }} — {{ loja_nome }}{% endblock %}
+
+{% block conteudo %}
+<section class="container secao">
+    <nav class="migalha">
+        <a href="{% url 'home' %}">Início</a> ›
+        <a href="{% url 'catalogo' %}">Sabores</a> ›
+        <span>{{ produto.nome }}</span>
+    </nav>
+
+    <div class="produto-grade">
+        <div class="produto-foto">
+            {% if produto.foto %}
+                <img src="{{ produto.foto.url }}" alt="{{ produto.nome }}">
+            {% else %}
+                <span class="sem-foto-grande">🍫</span>
+            {% endif %}
+        </div>
+
+        <div class="produto-info">
+            <h1>{{ produto.nome }}</h1>
+            {% if produto.peso_gramas %}<p class="peso">{{ produto.peso_gramas }}g por unidade</p>{% endif %}
+            <p class="preco-grande">R$ {{ produto.preco }}</p>
+            {% if produto.descricao %}<p class="desc">{{ produto.descricao }}</p>{% endif %}
+
+            <form method="post" action="{% url 'adicionar_ao_carrinho' produto.id %}" class="form-compra">
+                {% csrf_token %}
+                <div class="quantidade">
+                    <label for="qtd">Quantidade</label>
+                    <div class="qtd-controle">
+                        <button type="button" class="qtd-btn" data-acao="menos">−</button>
+                        <input type="number" id="qtd" name="quantidade" value="1" min="1" max="50" inputmode="numeric">
+                        <button type="button" class="qtd-btn" data-acao="mais">+</button>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-dourado btn-bloco">Adicionar ao carrinho</button>
+            </form>
+
+            <a href="{% url 'catalogo' %}" class="voltar">← Continuar escolhendo</a>
+
+            {% if produto.ingredientes %}
+            <details class="ingredientes">
+                <summary>Ingredientes</summary>
+                <p>{{ produto.ingredientes|linebreaksbr }}</p>
+            </details>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if relacionados %}
+    <div class="relacionados">
+        <h2 class="secao-titulo">Você também vai gostar</h2>
+        <div class="grade">
+            {% for p in relacionados %}
+            <article class="card">
+                <a href="{{ p.get_absolute_url }}" class="card-foto">
+                    {% if p.foto %}<img src="{{ p.foto.url }}" alt="{{ p.nome }}">{% else %}<span class="sem-foto">🍫</span>{% endif %}
+                </a>
+                <div class="card-corpo">
+                    <a href="{{ p.get_absolute_url }}" class="card-nome">{{ p.nome }}</a>
+                    <div class="card-rodape"><span class="preco">R$ {{ p.preco }}</span></div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</section>
+
+<style>
+.secao { padding: 32px 0 20px; }
+.migalha { font-size: .85rem; color: var(--texto-suave); margin-bottom: 24px; }
+.migalha a:hover { color: var(--cacau); text-decoration: underline; }
+.produto-grade { display: grid; grid-template-columns: 1fr 1fr; gap: 44px; align-items: start; }
+.produto-foto {
+    aspect-ratio: 1/1; border-radius: var(--radius); overflow: hidden;
+    background: var(--creme-2); display: flex; align-items: center; justify-content: center;
+    border: 1px solid var(--borda);
+}
+.produto-foto img { width: 100%; height: 100%; object-fit: cover; }
+.sem-foto-grande { font-size: 7rem; opacity: .3; }
+.produto-info h1 { font-size: clamp(1.6rem, 3vw, 2.3rem); margin-bottom: 6px; }
+.peso { color: var(--texto-suave); font-size: .9rem; margin: 0 0 12px; }
+.preco-grande { font-size: 2rem; font-weight: 700; color: var(--cacau); margin: 0 0 18px; }
+.desc { color: var(--texto-suave); line-height: 1.65; margin-bottom: 26px; }
+.form-compra { display: flex; flex-direction: column; gap: 18px; margin-bottom: 16px; }
+.quantidade label { display: block; font-size: .86rem; font-weight: 600; margin-bottom: 8px; }
+.qtd-controle { display: inline-flex; align-items: center; border: 1.5px solid var(--borda); border-radius: 10px; overflow: hidden; background: #fff; }
+.qtd-btn { width: 46px; height: 48px; border: none; background: transparent; font-size: 1.3rem; cursor: pointer; color: var(--cacau); }
+.qtd-btn:hover { background: var(--creme-2); }
+.qtd-controle input { width: 62px; height: 48px; border: none; text-align: center; font-size: 1.05rem; font-weight: 600; font-family: inherit; -moz-appearance: textfield; }
+.qtd-controle input::-webkit-outer-spin-button, .qtd-controle input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.voltar { display: inline-block; font-size: .9rem; color: var(--texto-suave); margin-top: 6px; }
+.voltar:hover { color: var(--cacau); }
+.ingredientes { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--borda); font-size: .9rem; color: var(--texto-suave); }
+.ingredientes summary { cursor: pointer; font-weight: 600; color: var(--texto); }
+.relacionados { margin-top: 64px; }
+.secao-titulo { text-align: center; margin-bottom: 30px; font-size: 1.5rem; }
+@media (max-width: 780px) {
+    .produto-grade { grid-template-columns: 1fr; gap: 26px; }
+}
+</style>
+
+<script>
+document.querySelectorAll('.qtd-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+        var input = document.getElementById('qtd');
+        var v = parseInt(input.value, 10) || 1;
+        input.value = btn.dataset.acao === 'mais' ? Math.min(v + 1, 50) : Math.max(v - 1, 1);
+    });
+});
+</script>
+{% endblock %}

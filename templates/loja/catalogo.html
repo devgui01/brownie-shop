@@ -1,0 +1,51 @@
+{% extends 'loja/base.html' %}
+
+{% block titulo %}Sabores — {{ loja_nome }}{% endblock %}
+
+{% block conteudo %}
+<section class="container secao">
+    <h1 class="titulo-pagina">Nossos sabores</h1>
+    <p class="subtitulo">Todos feitos na hora do pedido.</p>
+
+    <div class="grade">
+        {% for p in produtos %}
+        <article class="card">
+            <div class="card-foto-wrap">
+                <a href="{{ p.get_absolute_url }}" class="card-foto">
+                    {% if p.foto %}
+                        <img src="{{ p.foto.url }}" alt="{{ p.nome }}">
+                    {% else %}
+                        <span class="sem-foto">🍫</span>
+                    {% endif %}
+                </a>
+                {% if p.destaque %}<span class="selo">Mais pedido</span>{% endif %}
+            </div>
+            <div class="card-corpo">
+                <a href="{{ p.get_absolute_url }}" class="card-nome">{{ p.nome }}</a>
+                {% if p.descricao %}<p class="card-desc">{{ p.descricao|truncatewords:18 }}</p>{% endif %}
+                {% if p.peso_gramas %}<p class="peso">{{ p.peso_gramas }}g</p>{% endif %}
+                <div class="card-rodape">
+                    <span class="preco">R$ {{ p.preco }}</span>
+                    <form method="post" action="{% url 'adicionar_ao_carrinho' p.id %}" data-ajax-carrinho>
+                        {% csrf_token %}
+                        <input type="hidden" name="quantidade" value="1">
+                        <button type="submit" class="btn btn-primario btn-pequeno">Adicionar</button>
+                    </form>
+                </div>
+            </div>
+        </article>
+        {% empty %}
+        <p class="vazio">Nenhum sabor disponível no momento.</p>
+        {% endfor %}
+    </div>
+</section>
+
+<style>
+.secao { padding: 44px 0 20px; }
+.titulo-pagina { font-size: clamp(1.6rem, 3vw, 2.2rem); text-align: center; margin-bottom: 6px; }
+.subtitulo { text-align: center; color: var(--texto-suave); margin: 0 0 36px; }
+.btn-pequeno { padding: 9px 15px; font-size: .87rem; border-radius: 9px; }
+.vazio { text-align: center; color: var(--texto-suave); grid-column: 1/-1; }
+.peso { font-size: .8rem; color: var(--texto-suave); margin: 0; }
+</style>
+{% endblock %}

@@ -1,0 +1,320 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block titulo %}{{ loja_nome }}{% endblock %}</title>
+    <meta name="description" content="Brownies artesanais feitos na hora. Tradicional, Ninho com Nutella e Brigadeiro.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍫</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --cacau: #3b2314;
+            --cacau-claro: #5c3a21;
+            --creme: #fdf8f3;
+            --creme-2: #f7ede2;
+            --dourado: #c8892b;
+            --dourado-claro: #e0a94f;
+            --texto: #2b1d13;
+            --texto-suave: #7a6653;
+            --borda: #e8dccd;
+            --ok: #2f7d4f;
+            --erro: #c0392b;
+            --radius: 14px;
+            --sombra: 0 4px 18px rgba(59, 35, 20, 0.08);
+            --sombra-forte: 0 10px 34px rgba(59, 35, 20, 0.16);
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--creme);
+            color: var(--texto);
+            line-height: 1.55;
+            -webkit-font-smoothing: antialiased;
+        }
+        h1, h2, h3 { font-family: 'Fraunces', Georgia, serif; margin: 0 0 .5em; line-height: 1.2; }
+        a { color: inherit; text-decoration: none; }
+        img { max-width: 100%; display: block; }
+
+        .container { max-width: 1120px; margin: 0 auto; padding: 0 20px; }
+
+        /* ---------- Header ---------- */
+        header.topo {
+            background: var(--cacau);
+            color: var(--creme);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            box-shadow: 0 2px 14px rgba(0,0,0,.18);
+        }
+        .topo-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            height: 68px;
+        }
+        .marca {
+            font-family: 'Fraunces', serif;
+            font-size: 1.35rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            white-space: nowrap;
+        }
+        .marca .emoji { font-size: 1.5rem; }
+        .nav { display: flex; align-items: center; gap: 22px; }
+        .nav a { font-size: .94rem; font-weight: 500; opacity: .88; transition: opacity .15s; }
+        .nav a:hover { opacity: 1; }
+        .btn-carrinho {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--dourado);
+            color: var(--cacau) !important;
+            padding: 9px 16px;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: .92rem;
+            opacity: 1 !important;
+        }
+        .btn-carrinho:hover { background: var(--dourado-claro); }
+        .badge-carrinho {
+            background: var(--cacau);
+            color: var(--creme);
+            border-radius: 999px;
+            min-width: 21px;
+            height: 21px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .74rem;
+            padding: 0 5px;
+        }
+
+        /* ---------- Avisos ---------- */
+        .avisos { margin: 18px 0 0; display: flex; flex-direction: column; gap: 8px; }
+        .aviso {
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: .92rem;
+            font-weight: 500;
+            border-left: 4px solid;
+        }
+        .aviso.success { background: #eaf7ef; border-color: var(--ok); color: #1c5c37; }
+        .aviso.error   { background: #fdecea; border-color: var(--erro); color: #8c271c; }
+        .aviso.warning { background: #fff6e5; border-color: var(--dourado); color: #7a5713; }
+        .aviso.info    { background: #eef4fb; border-color: #3a6ea5; color: #24486d; }
+
+        /* ---------- Botões ---------- */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 13px 24px;
+            border-radius: 10px;
+            border: none;
+            font-family: inherit;
+            font-size: .98rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform .12s, box-shadow .18s, background .18s;
+            text-align: center;
+        }
+        .btn-primario { background: var(--cacau); color: var(--creme); }
+        .btn-primario:hover { background: var(--cacau-claro); transform: translateY(-1px); box-shadow: var(--sombra); }
+        .btn-dourado { background: var(--dourado); color: var(--cacau); }
+        .btn-dourado:hover { background: var(--dourado-claro); transform: translateY(-1px); }
+        .btn-bloco { width: 100%; }
+        .btn-fantasma { background: transparent; color: var(--texto-suave); border: 1px solid var(--borda); }
+        .btn-fantasma:hover { border-color: var(--cacau); color: var(--cacau); }
+
+        /* ---------- Cards de produto ---------- */
+        .grade {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 24px;
+        }
+        .card {
+            background: #fff;
+            border: 1px solid var(--borda);
+            border-radius: var(--radius);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: transform .18s, box-shadow .18s;
+        }
+        .card:hover { transform: translateY(-3px); box-shadow: var(--sombra-forte); }
+        .card-foto {
+            aspect-ratio: 1 / 1;
+            background: var(--creme-2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .card-foto img { width: 100%; height: 100%; object-fit: cover; }
+        .card-foto .sem-foto { font-size: 4rem; opacity: .35; }
+        .card-corpo { padding: 18px; display: flex; flex-direction: column; flex: 1; gap: 8px; }
+        .card-nome { font-family: 'Fraunces', serif; font-size: 1.15rem; font-weight: 600; }
+        .card-desc { font-size: .88rem; color: var(--texto-suave); flex: 1; }
+        .card-rodape { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 4px; }
+        .preco { font-size: 1.3rem; font-weight: 700; color: var(--cacau); }
+        .selo {
+            position: absolute; top: 12px; left: 12px;
+            background: var(--dourado); color: var(--cacau);
+            padding: 4px 12px; border-radius: 999px;
+            font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .5px;
+        }
+        .card-foto-wrap { position: relative; }
+
+        /* ---------- Rodapé ---------- */
+        footer.rodape {
+            background: var(--cacau);
+            color: var(--creme);
+            margin-top: 64px;
+            padding: 40px 0 28px;
+        }
+        .rodape-grade { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 28px; }
+        .rodape h4 { font-family: 'Fraunces', serif; margin: 0 0 10px; font-size: 1rem; }
+        .rodape p, .rodape a { font-size: .9rem; opacity: .82; margin: 0 0 6px; }
+        .rodape a:hover { opacity: 1; text-decoration: underline; }
+        .rodape-base {
+            margin-top: 28px; padding-top: 18px;
+            border-top: 1px solid rgba(253,248,243,.16);
+            font-size: .82rem; opacity: .7; text-align: center;
+        }
+
+        /* ---------- Formulários ---------- */
+        .campo { margin-bottom: 16px; }
+        .campo label { display: block; font-size: .86rem; font-weight: 600; margin-bottom: 6px; }
+        .campo input, .campo textarea, .campo select {
+            width: 100%; padding: 12px 14px;
+            border: 1.5px solid var(--borda); border-radius: 10px;
+            font-family: inherit; font-size: .96rem;
+            background: #fff; color: var(--texto);
+            transition: border-color .15s, box-shadow .15s;
+        }
+        .campo input:focus, .campo textarea:focus, .campo select:focus {
+            outline: none; border-color: var(--dourado);
+            box-shadow: 0 0 0 3px rgba(200,137,43,.15);
+        }
+        .campo small { color: var(--texto-suave); font-size: .8rem; }
+        .linha { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+        @media (max-width: 720px) {
+            .nav a:not(.btn-carrinho) { display: none; }
+            .topo-inner { height: 60px; }
+            .marca { font-size: 1.15rem; }
+            .linha { grid-template-columns: 1fr; }
+            .grade { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; }
+            .card-corpo { padding: 13px; }
+            .card-nome { font-size: 1rem; }
+            .preco { font-size: 1.1rem; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="topo">
+    <div class="container topo-inner">
+        <a href="{% url 'home' %}" class="marca">
+            <span class="emoji">🍫</span> {{ loja_nome }}
+        </a>
+        <nav class="nav">
+            <a href="{% url 'catalogo' %}">Sabores</a>
+            <a href="{% url 'acompanhar_pedido' %}">Meu pedido</a>
+            <a href="{% url 'ver_carrinho' %}" class="btn-carrinho">
+                <span>🛒</span> Carrinho
+                {% if carrinho_quantidade %}<span class="badge-carrinho">{{ carrinho_quantidade }}</span>{% endif %}
+            </a>
+        </nav>
+    </div>
+</header>
+
+<main>
+    {% if messages %}
+    <div class="container avisos">
+        {% for m in messages %}
+        <div class="aviso {{ m.tags }}">{{ m }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% block conteudo %}{% endblock %}
+</main>
+
+<footer class="rodape">
+    <div class="container">
+        <div class="rodape-grade">
+            <div>
+                <h4>🍫 {{ loja_nome }}</h4>
+                <p>Brownies artesanais, feitos na hora do pedido.</p>
+            </div>
+            <div>
+                <h4>Atendimento</h4>
+                {% if loja_whatsapp %}<p><a href="https://wa.me/{{ loja_whatsapp }}">WhatsApp</a></p>{% endif %}
+                {% if loja_email %}<p><a href="mailto:{{ loja_email }}">{{ loja_email }}</a></p>{% endif %}
+            </div>
+            <div>
+                <h4>Entrega</h4>
+                <p>Frete grátis acima de R$ {{ frete_gratis_acima }}</p>
+                <p>Pedidos confirmados após o pagamento</p>
+            </div>
+        </div>
+        <div class="rodape-base">
+            &copy; {% now "Y" %} {{ loja_nome }}. Todos os direitos reservados.
+        </div>
+    </div>
+</footer>
+
+<script>
+// Adicionar ao carrinho sem recarregar a página
+document.addEventListener('submit', async function (e) {
+    const form = e.target;
+    if (!form.matches('form[data-ajax-carrinho]')) return;
+    e.preventDefault();
+
+    const btn = form.querySelector('button[type="submit"]');
+    const textoOriginal = btn ? btn.innerHTML : '';
+    if (btn) { btn.disabled = true; btn.innerHTML = 'Adicionando…'; }
+
+    try {
+        const resp = await fetch(form.action, {
+            method: 'POST',
+            body: new FormData(form),
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        });
+        const dados = await resp.json();
+
+        if (dados.ok) {
+            // Atualiza o contador do cabeçalho
+            const badge = document.querySelector('.badge-carrinho');
+            const link = document.querySelector('.btn-carrinho');
+            if (badge) {
+                badge.textContent = dados.quantidade;
+            } else if (link) {
+                const novo = document.createElement('span');
+                novo.className = 'badge-carrinho';
+                novo.textContent = dados.quantidade;
+                link.appendChild(novo);
+            }
+            if (btn) { btn.innerHTML = '✓ Adicionado'; }
+            setTimeout(() => { if (btn) { btn.disabled = false; btn.innerHTML = textoOriginal; } }, 1400);
+        }
+    } catch (err) {
+        if (btn) { btn.disabled = false; btn.innerHTML = textoOriginal; }
+        form.removeAttribute('data-ajax-carrinho');
+        form.submit();
+    }
+});
+</script>
+{% block script %}{% endblock %}
+</body>
+</html>

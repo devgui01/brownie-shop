@@ -1,0 +1,97 @@
+{% extends 'loja/base.html' %}
+
+{% block conteudo %}
+<section class="hero">
+    <div class="container">
+        <h1>Brownie feito na hora,<br>do jeito que você merece.</h1>
+        <p>Três sabores, receita de casa, entregues fresquinhos.</p>
+        <a href="{% url 'catalogo' %}" class="btn btn-dourado">Ver os sabores</a>
+    </div>
+</section>
+
+<section class="container secao">
+    <h2 class="secao-titulo">Nossos sabores</h2>
+    <div class="grade">
+        {% for p in produtos %}
+        <article class="card">
+            <div class="card-foto-wrap">
+                <a href="{{ p.get_absolute_url }}" class="card-foto">
+                    {% if p.foto %}
+                        <img src="{{ p.foto.url }}" alt="{{ p.nome }}">
+                    {% else %}
+                        <span class="sem-foto">🍫</span>
+                    {% endif %}
+                </a>
+                {% if p.destaque %}<span class="selo">Mais pedido</span>{% endif %}
+            </div>
+            <div class="card-corpo">
+                <a href="{{ p.get_absolute_url }}" class="card-nome">{{ p.nome }}</a>
+                {% if p.descricao %}<p class="card-desc">{{ p.descricao|truncatewords:16 }}</p>{% endif %}
+                <div class="card-rodape">
+                    <span class="preco">R$ {{ p.preco }}</span>
+                    <form method="post" action="{% url 'adicionar_ao_carrinho' p.id %}" data-ajax-carrinho>
+                        {% csrf_token %}
+                        <input type="hidden" name="quantidade" value="1">
+                        <button type="submit" class="btn btn-primario btn-pequeno">Adicionar</button>
+                    </form>
+                </div>
+            </div>
+        </article>
+        {% empty %}
+        <p class="vazio">Nenhum sabor cadastrado ainda. Entre no <a href="/admin/">admin</a> e cadastre os brownies.</p>
+        {% endfor %}
+    </div>
+</section>
+
+{% if carrinho_subtotal %}
+<section class="container secao faixa-frete">
+    {% if carrinho.falta_para_frete_gratis > 0 %}
+        <p>Faltam <strong>R$ {{ carrinho.falta_para_frete_gratis }}</strong> para você ganhar <strong>frete grátis</strong>! 🚚</p>
+    {% else %}
+        <p>🎉 Você garantiu <strong>frete grátis</strong>!</p>
+    {% endif %}
+</section>
+{% endif %}
+
+<section class="container secao">
+    <div class="como-funciona">
+        <h2 class="secao-titulo">Como funciona</h2>
+        <div class="passos">
+            <div class="passo"><span class="num">1</span><h3>Escolha</h3><p>Monte seu pedido com os sabores que quiser.</p></div>
+            <div class="passo"><span class="num">2</span><h3>Pague</h3><p>Pix ou cartão, com segurança pelo Mercado Pago.</p></div>
+            <div class="passo"><span class="num">3</span><h3>Receba</h3><p>Assamos depois da confirmação e entregamos.</p></div>
+        </div>
+    </div>
+</section>
+
+<style>
+.hero {
+    background: linear-gradient(140deg, var(--cacau) 0%, #55341d 100%);
+    color: var(--creme);
+    padding: 76px 0 84px;
+    text-align: center;
+}
+.hero h1 { font-size: clamp(1.9rem, 4.4vw, 3.1rem); margin-bottom: 14px; }
+.hero p { font-size: 1.1rem; opacity: .9; margin: 0 0 28px; }
+.secao { padding: 52px 0; }
+.secao-titulo { font-size: clamp(1.5rem, 2.6vw, 2rem); text-align: center; margin-bottom: 34px; }
+.btn-pequeno { padding: 9px 15px; font-size: .87rem; border-radius: 9px; }
+.vazio { text-align: center; color: var(--texto-suave); grid-column: 1/-1; }
+.faixa-frete {
+    background: var(--creme-2); border-radius: var(--radius);
+    padding: 18px 24px; text-align: center; margin: 0 auto;
+}
+.faixa-frete p { margin: 0; font-size: 1rem; }
+.como-funciona { text-align: center; }
+.passos { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 26px; margin-top: 10px; }
+.passo { padding: 22px; }
+.passo .num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 38px; height: 38px; border-radius: 50%;
+    background: var(--dourado); color: var(--cacau);
+    font-weight: 700; margin-bottom: 12px;
+}
+.passo h3 { font-size: 1.1rem; margin-bottom: 6px; }
+.passo p { color: var(--texto-suave); font-size: .92rem; margin: 0; }
+</style>
+{% endblock %}

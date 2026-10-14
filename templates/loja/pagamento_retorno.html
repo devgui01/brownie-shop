@@ -1,0 +1,102 @@
+{% extends 'loja/base.html' %}
+
+{% block titulo %}Pagamento — {{ loja_nome }}{% endblock %}
+
+{% block conteudo %}
+<section class="container secao">
+    {% if pedido %}
+        {% if pedido.status == 'pago' %}
+        <div class="resultado resultado-ok">
+            <span class="icone">✓</span>
+            <h1>Pagamento confirmado!</h1>
+            <p>Recebemos o pagamento do pedido <strong>#{{ pedido.pk }}</strong>.</p>
+            <p class="detalhe">Vamos começar a preparar seus brownies. Você recebe atualizações no WhatsApp.</p>
+            <div class="resumo-pedido">
+                <div class="linha"><span>Pedido</span><strong>#{{ pedido.pk }}</strong></div>
+                <div class="linha"><span>Total pago</span><strong>R$ {{ pedido.total }}</strong></div>
+                <div class="linha"><span>Status</span><strong>{{ pedido.get_status_display }}</strong></div>
+            </div>
+            <a href="{% url 'catalogo' %}" class="btn btn-primario">Comprar mais</a>
+        </div>
+
+        {% elif pedido.status == 'cancelado' %}
+        <div class="resultado resultado-erro">
+            <span class="icone">✕</span>
+            <h1>Pagamento não concluído</h1>
+            <p>O pagamento do pedido <strong>#{{ pedido.pk }}</strong> não foi aprovado.</p>
+            <a href="{% url 'ver_carrinho' %}" class="btn btn-primario">Tentar novamente</a>
+        </div>
+
+        {% else %}
+        <div class="resultado resultado-espera">
+            <span class="icone">⏳</span>
+            <h1>Aguardando confirmação</h1>
+            <p>Estamos esperando a confirmação do pagamento do pedido <strong>#{{ pedido.pk }}</strong>.</p>
+            <p class="detalhe">
+                Se você pagou com <strong>Pix</strong>, a confirmação costuma levar alguns segundos.
+                Esta página atualiza sozinha.
+            </p>
+            <div class="resumo-pedido">
+                <div class="linha"><span>Pedido</span><strong>#{{ pedido.pk }}</strong></div>
+                <div class="linha"><span>Total</span><strong>R$ {{ pedido.total }}</strong></div>
+            </div>
+            <a href="{% url 'acompanhar_pedido' %}" class="btn btn-fantasma">Acompanhar pedido</a>
+        </div>
+        {% endif %}
+
+    {% else %}
+    <div class="resultado resultado-espera">
+        <span class="icone">🔎</span>
+        <h1>Não encontramos este pedido</h1>
+        <p>Se você acabou de pagar, verifique seu pedido pela página de acompanhamento.</p>
+        <a href="{% url 'acompanhar_pedido' %}" class="btn btn-primario">Acompanhar pedido</a>
+    </div>
+    {% endif %}
+</section>
+
+<style>
+.secao { padding: 56px 0 30px; }
+.resultado {
+    max-width: 540px; margin: 0 auto; text-align: center;
+    background: #fff; border: 1px solid var(--borda);
+    border-radius: var(--radius); padding: 46px 34px;
+}
+.resultado .icone {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 72px; height: 72px; border-radius: 50%;
+    font-size: 2.2rem; margin-bottom: 20px; font-weight: 700;
+}
+.resultado-ok .icone { background: #eaf7ef; color: var(--ok); }
+.resultado-erro .icone { background: #fdecea; color: var(--erro); }
+.resultado-espera .icone { background: #fff6e5; color: var(--dourado); }
+.resultado h1 { font-size: 1.6rem; margin-bottom: 12px; }
+.resultado p { color: var(--texto-suave); margin: 0 0 10px; }
+.detalhe { font-size: .9rem; }
+.resumo-pedido {
+    background: var(--creme-2); border-radius: 10px;
+    padding: 16px 20px; margin: 24px 0; text-align: left;
+}
+.resumo-pedido .linha { display: flex; justify-content: space-between; font-size: .92rem; margin-bottom: 8px; color: var(--texto-suave); }
+.resumo-pedido .linha:last-child { margin-bottom: 0; }
+.resumo-pedido strong { color: var(--texto); }
+</style>
+
+{% if pedido and pedido.status == 'aguardando' %}
+<script>
+// Polling: o webhook pode demorar alguns segundos. Recarrega ate 6 vezes.
+(function () {
+    let tentativas = 0;
+    const timer = setInterval(function () {
+        tentativas++;
+        if (tentativas > 6) { clearInterval(timer); return; }
+        fetch(window.location.href, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(r => r.text())
+            .then(html => {
+                if (html.includes('Pagamento confirmado')) window.location.reload();
+            })
+            .catch(() => {});
+    }, 5000);
+})();
+</script>
+{% endif %}
+{% endblock %}

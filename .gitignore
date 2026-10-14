@@ -1,0 +1,26 @@
+# Ambiente
+.env
+.venv/
+venv/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Banco
+db.sqlite3
+*.sqlite3
+
+# Midia enviada pelos usuarios
+media/
+
+# Estaticos gerados
+staticfiles/
+
+# Editores / SO
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db

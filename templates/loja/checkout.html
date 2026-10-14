@@ -1,0 +1,155 @@
+{% extends 'loja/base.html' %}
+
+{% block titulo %}Finalizar pedido — {{ loja_nome }}{% endblock %}
+
+{% block conteudo %}
+<section class="container secao">
+    <h1 class="titulo-pagina">Finalizar pedido</h1>
+
+    <form method="post" class="checkout-grade">
+        {% csrf_token %}
+
+        <div class="dados">
+            <h2>Dados para entrega</h2>
+
+            <div class="campo">
+                <label for="nome">Nome completo *</label>
+                <input type="text" id="nome" name="nome" required value="{{ valores.nome|default:'' }}">
+            </div>
+
+            <div class="linha">
+                <div class="campo">
+                    <label for="telefone">WhatsApp *</label>
+                    <input type="tel" id="telefone" name="telefone" required
+                           placeholder="(65) 99999-9999" value="{{ valores.telefone|default:'' }}">
+                </div>
+                <div class="campo">
+                    <label for="email">E-mail</label>
+                    <input type="email" id="email" name="email" value="{{ valores.email|default:'' }}">
+                </div>
+            </div>
+
+            <div class="linha">
+                <div class="campo">
+                    <label for="cep">CEP *</label>
+                    <input type="text" id="cep" name="cep" required placeholder="78000-000"
+                           inputmode="numeric" value="{{ valores.cep|default:'' }}">
+                </div>
+                <div class="campo">
+                    <label for="numero">Número *</label>
+                    <input type="text" id="numero" name="numero" required value="{{ valores.numero|default:'' }}">
+                </div>
+            </div>
+
+            <div class="campo">
+                <label for="endereco">Rua / Avenida *</label>
+                <input type="text" id="endereco" name="endereco" required value="{{ valores.endereco|default:'' }}">
+            </div>
+
+            <div class="linha">
+                <div class="campo">
+                    <label for="bairro">Bairro *</label>
+                    <input type="text" id="bairro" name="bairro" required value="{{ valores.bairro|default:'' }}">
+                </div>
+                <div class="campo">
+                    <label for="cidade">Cidade *</label>
+                    <input type="text" id="cidade" name="cidade" required value="{{ valores.cidade|default:'Cuiabá' }}">
+                </div>
+            </div>
+
+            <div class="campo">
+                <label for="complemento">Complemento / ponto de referência</label>
+                <input type="text" id="complemento" name="complemento" value="{{ valores.complemento|default:'' }}">
+            </div>
+
+            <div class="campo">
+                <label for="observacao">Observação</label>
+                <textarea id="observacao" name="observacao" rows="3"
+                          placeholder="Ex: entregar depois das 18h">{{ valores.observacao|default:'' }}</textarea>
+            </div>
+        </div>
+
+        <aside class="resumo">
+            <h2>Seu pedido</h2>
+            {% for item in carrinho %}
+            <div class="linha-item">
+                <span class="qtd">{{ item.quantidade }}×</span>
+                <span class="nome">{{ item.nome }}</span>
+                <span class="val">R$ {{ item.subtotal }}</span>
+            </div>
+            {% endfor %}
+
+            <div class="linha-resumo"><span>Subtotal</span><span>R$ {{ carrinho.subtotal }}</span></div>
+            <div class="linha-resumo">
+                <span>Frete</span>
+                <span>{% if carrinho.frete == 0 %}<em class="gratis">Grátis</em>{% else %}R$ {{ carrinho.frete }}{% endif %}</span>
+            </div>
+            <div class="linha-total"><span>Total</span><span>R$ {{ carrinho.total }}</span></div>
+
+            <button type="submit" class="btn btn-dourado btn-bloco">Ir para o pagamento</button>
+            <p class="seguro">🔒 Você será levado ao Mercado Pago</p>
+            <p class="pgto-tipos">Aceita <strong>Pix</strong> e <strong>cartão</strong></p>
+            <a href="{% url 'ver_carrinho' %}" class="voltar">← Voltar ao carrinho</a>
+        </aside>
+    </form>
+</section>
+
+<style>
+.secao { padding: 40px 0 20px; }
+.titulo-pagina { font-size: clamp(1.6rem, 3vw, 2.1rem); margin-bottom: 28px; }
+.checkout-grade { display: grid; grid-template-columns: 1fr 350px; gap: 32px; align-items: start; }
+.dados { background: #fff; border: 1px solid var(--borda); border-radius: var(--radius); padding: 26px; }
+.dados h2 { font-size: 1.15rem; margin-bottom: 20px; }
+.resumo {
+    background: #fff; border: 1px solid var(--borda); border-radius: var(--radius);
+    padding: 24px; position: sticky; top: 88px;
+}
+.resumo h2 { font-size: 1.15rem; margin-bottom: 16px; }
+.linha-item { display: flex; gap: 9px; font-size: .89rem; margin-bottom: 9px; color: var(--texto-suave); }
+.linha-item .qtd { font-weight: 700; color: var(--cacau); flex-shrink: 0; }
+.linha-item .nome { flex: 1; min-width: 0; }
+.linha-item .val { flex-shrink: 0; }
+.linha-resumo { display: flex; justify-content: space-between; font-size: .93rem; margin-bottom: 10px; color: var(--texto-suave); padding-top: 12px; border-top: 1px solid var(--borda); }
+.gratis { color: var(--ok); font-weight: 700; font-style: normal; }
+.linha-total {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding-top: 14px; margin: 14px 0 18px; border-top: 1.5px solid var(--borda);
+    font-size: 1.25rem; font-weight: 700; color: var(--cacau);
+}
+.seguro { text-align: center; font-size: .8rem; color: var(--texto-suave); margin: 12px 0 4px; }
+.pgto-tipos { text-align: center; font-size: .82rem; color: var(--texto-suave); margin: 0 0 12px; }
+.voltar { display: block; text-align: center; font-size: .87rem; color: var(--texto-suave); }
+.voltar:hover { color: var(--cacau); }
+@media (max-width: 860px) {
+    .checkout-grade { grid-template-columns: 1fr; }
+    .resumo { position: static; order: -1; }
+    .dados { padding: 20px; }
+}
+</style>
+
+<script>
+// Busca endereco pelo CEP (ViaCEP) - agiliza o preenchimento
+document.getElementById('cep').addEventListener('blur', async function () {
+    const cep = this.value.replace(/\D/g, '');
+    if (cep.length !== 8) return;
+    try {
+        const r = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+        const d = await r.json();
+        if (d.erro) return;
+        document.getElementById('endereco').value = d.logradouro || '';
+        document.getElementById('bairro').value = d.bairro || '';
+        document.getElementById('cidade').value = d.localidade || '';
+        document.getElementById('numero').focus();
+    } catch (e) { /* sem internet: segue manual */ }
+});
+
+// Mascara simples de telefone
+document.getElementById('telefone').addEventListener('input', function () {
+    let v = this.value.replace(/\D/g, '').slice(0, 11);
+    if (v.length > 6) v = `(${v.slice(0,2)}) ${v.slice(2,7)}-${v.slice(7)}`;
+    else if (v.length > 2) v = `(${v.slice(0,2)}) ${v.slice(2)}`;
+    else if (v.length) v = `(${v}`;
+    this.value = v;
+});
+</script>
+{% endblock %}

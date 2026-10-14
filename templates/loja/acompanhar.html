@@ -1,0 +1,106 @@
+{% extends 'loja/base.html' %}
+
+{% block titulo %}Meu pedido — {{ loja_nome }}{% endblock %}
+
+{% block conteudo %}
+<section class="container secao">
+    <h1 class="titulo-pagina">Acompanhar pedido</h1>
+    <p class="subtitulo">Informe o número do pedido e o telefone usado na compra.</p>
+
+    {% if erro %}<div class="aviso error">{{ erro }}</div>{% endif %}
+
+    <form method="post" class="form-acompanhar">
+        {% csrf_token %}
+        <div class="linha">
+            <div class="campo">
+                <label for="numero">Número do pedido</label>
+                <input type="text" id="numero" name="numero" placeholder="Ex: 12" inputmode="numeric" required>
+            </div>
+            <div class="campo">
+                <label for="telefone">Telefone</label>
+                <input type="tel" id="telefone" name="telefone" placeholder="(65) 99999-9999" required>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primario btn-bloco">Buscar pedido</button>
+    </form>
+
+    {% if pedido %}
+    <div class="pedido-encontrado">
+        <div class="cabecalho-pedido">
+            <div>
+                <h2>Pedido #{{ pedido.pk }}</h2>
+                <p class="data">Feito em {{ pedido.criado_em|date:"d/m/Y \à\s H:i" }}</p>
+            </div>
+            <span class="status status-{{ pedido.status }}">{{ pedido.get_status_display }}</span>
+        </div>
+
+        <div class="progresso">
+            {% for codigo, rotulo in pedido.STATUS %}
+                {% if codigo != 'carrinho' and codigo != 'cancelado' %}
+                <div class="etapa {% if pedido.status == codigo %}atual{% endif %}">
+                    <span class="bolinha"></span>
+                    <span class="rotulo">{{ rotulo }}</span>
+                </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+
+        <div class="itens-pedido">
+            {% for item in pedido.itens.all %}
+            <div class="linha-item">
+                <span class="qtd">{{ item.quantidade }}×</span>
+                <span class="nome">{{ item.produto.nome }}</span>
+                <span class="val">R$ {{ item.subtotal }}</span>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="totais">
+            <div class="linha"><span>Subtotal</span><span>R$ {{ pedido.subtotal }}</span></div>
+            <div class="linha"><span>Frete</span><span>{% if pedido.frete == 0 %}Grátis{% else %}R$ {{ pedido.frete }}{% endif %}</span></div>
+            <div class="linha total"><span>Total</span><span>R$ {{ pedido.total }}</span></div>
+        </div>
+
+        <div class="entrega">
+            <h3>Entrega</h3>
+            <p>{{ pedido.nome }}<br>
+               {{ pedido.endereco }}, {{ pedido.numero }}{% if pedido.complemento %} — {{ pedido.complemento }}{% endif %}<br>
+               {{ pedido.bairro }} — {{ pedido.cidade }}<br>
+               CEP {{ pedido.cep }}</p>
+        </div>
+    </div>
+    {% endif %}
+</section>
+
+<style>
+.secao { padding: 40px 0 20px; max-width: 720px; }
+.titulo-pagina { font-size: clamp(1.6rem, 3vw, 2.1rem); margin-bottom: 6px; }
+.subtitulo { color: var(--texto-suave); margin: 0 0 28px; }
+.form-acompanhar { background: #fff; border: 1px solid var(--borda); border-radius: var(--radius); padding: 24px; margin-bottom: 30px; }
+.pedido-encontrado { background: #fff; border: 1px solid var(--borda); border-radius: var(--radius); padding: 26px; }
+.cabecalho-pedido { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 24px; }
+.cabecalho-pedido h2 { font-size: 1.3rem; margin: 0 0 4px; }
+.data { font-size: .84rem; color: var(--texto-suave); margin: 0; }
+.status { padding: 6px 14px; border-radius: 999px; font-size: .8rem; font-weight: 700; white-space: nowrap; }
+.status-pago, .status-entregue { background: #eaf7ef; color: var(--ok); }
+.status-aguardando { background: #fff6e5; color: #8a6410; }
+.status-preparando, .status-enviado { background: #eef4fb; color: #24486d; }
+.status-cancelado { background: #fdecea; color: var(--erro); }
+.progresso { display: flex; justify-content: space-between; gap: 6px; margin-bottom: 28px; flex-wrap: wrap; }
+.etapa { flex: 1; text-align: center; min-width: 76px; position: relative; }
+.etapa .bolinha { display: block; width: 14px; height: 14px; border-radius: 50%; background: var(--borda); margin: 0 auto 8px; }
+.etapa.atual .bolinha { background: var(--dourado); box-shadow: 0 0 0 5px rgba(200,137,43,.2); }
+.etapa .rotulo { font-size: .74rem; color: var(--texto-suave); }
+.etapa.atual .rotulo { color: var(--cacau); font-weight: 700; }
+.itens-pedido { border-top: 1px solid var(--borda); padding-top: 18px; margin-bottom: 18px; }
+.linha-item { display: flex; gap: 10px; font-size: .92rem; margin-bottom: 9px; color: var(--texto-suave); }
+.linha-item .qtd { font-weight: 700; color: var(--cacau); }
+.linha-item .nome { flex: 1; }
+.totais { border-top: 1px solid var(--borda); padding-top: 16px; margin-bottom: 22px; }
+.totais .linha { display: flex; justify-content: space-between; font-size: .92rem; margin-bottom: 8px; color: var(--texto-suave); }
+.totais .total { font-size: 1.15rem; font-weight: 700; color: var(--cacau); border-top: 1.5px solid var(--borda); padding-top: 12px; margin-top: 10px; }
+.entrega { background: var(--creme-2); border-radius: 10px; padding: 16px 20px; }
+.entrega h3 { font-size: .95rem; margin: 0 0 8px; }
+.entrega p { font-size: .88rem; color: var(--texto-suave); margin: 0; line-height: 1.7; }
+</style>
+{% endblock %}

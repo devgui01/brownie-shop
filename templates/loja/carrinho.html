@@ -1,0 +1,143 @@
+{% extends 'loja/base.html' %}
+
+{% block titulo %}Carrinho — {{ loja_nome }}{% endblock %}
+
+{% block conteudo %}
+<section class="container secao">
+    <h1 class="titulo-pagina">Seu carrinho</h1>
+
+    {% if carrinho_quantidade %}
+    <div class="carrinho-grade">
+        <div class="itens">
+            {% for item in carrinho %}
+            <div class="item {% if item.indisponivel %}item-off{% endif %}">
+                <div class="item-foto">
+                    {% if item.produto and item.produto.foto %}
+                        <img src="{{ item.produto.foto.url }}" alt="{{ item.nome }}">
+                    {% else %}
+                        <span>🍫</span>
+                    {% endif %}
+                </div>
+
+                <div class="item-info">
+                    <strong>{{ item.nome }}</strong>
+                    {% if item.indisponivel %}
+                        <span class="tag-off">Indisponível — remova para continuar</span>
+                    {% endif %}
+                    <span class="item-preco">R$ {{ item.preco }} cada</span>
+                </div>
+
+                <form method="post" action="{% url 'atualizar_carrinho' item.produto_id %}" class="item-qtd">
+                    {% csrf_token %}
+                    <input type="number" name="quantidade" value="{{ item.quantidade }}" min="0" max="50"
+                           inputmode="numeric" onchange="this.form.submit()">
+                </form>
+
+                <div class="item-subtotal">R$ {{ item.subtotal }}</div>
+
+                <form method="post" action="{% url 'remover_do_carrinho' item.produto_id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="item-remover" title="Remover">✕</button>
+                </form>
+            </div>
+            {% endfor %}
+
+            <a href="{% url 'catalogo' %}" class="continuar">← Adicionar mais sabores</a>
+        </div>
+
+        <aside class="resumo">
+            <h2>Resumo</h2>
+            <div class="linha-resumo"><span>Subtotal</span><span>R$ {{ carrinho.subtotal }}</span></div>
+            <div class="linha-resumo">
+                <span>Frete</span>
+                <span>{% if carrinho.frete == 0 %}<em class="gratis">Grátis</em>{% else %}R$ {{ carrinho.frete }}{% endif %}</span>
+            </div>
+
+            {% if carrinho.falta_para_frete_gratis > 0 %}
+            <p class="aviso-frete">Faltam <strong>R$ {{ carrinho.falta_para_frete_gratis }}</strong> para frete grátis</p>
+            {% endif %}
+
+            <div class="linha-total"><span>Total</span><span>R$ {{ carrinho.total }}</span></div>
+
+            <a href="{% url 'checkout' %}" class="btn btn-dourado btn-bloco">Finalizar pedido</a>
+            <p class="seguro">🔒 Pagamento seguro via Mercado Pago</p>
+        </aside>
+    </div>
+
+    {% else %}
+    <div class="vazio-carrinho">
+        <span class="emoji-vazio">🛒</span>
+        <h2>Seu carrinho está vazio</h2>
+        <p>Escolha seus sabores favoritos e volte aqui.</p>
+        <a href="{% url 'catalogo' %}" class="btn btn-dourado">Ver os sabores</a>
+    </div>
+    {% endif %}
+</section>
+
+<style>
+.secao { padding: 40px 0 20px; }
+.titulo-pagina { font-size: clamp(1.6rem, 3vw, 2.1rem); margin-bottom: 28px; }
+.carrinho-grade { display: grid; grid-template-columns: 1fr 340px; gap: 30px; align-items: start; }
+.itens { display: flex; flex-direction: column; gap: 14px; }
+.item {
+    display: grid;
+    grid-template-columns: 74px 1fr auto auto auto;
+    gap: 16px; align-items: center;
+    background: #fff; border: 1px solid var(--borda);
+    border-radius: var(--radius); padding: 14px;
+}
+.item-off { opacity: .6; border-color: var(--erro); }
+.item-foto {
+    width: 74px; height: 74px; border-radius: 10px; overflow: hidden;
+    background: var(--creme-2); display: flex; align-items: center; justify-content: center; font-size: 2rem;
+}
+.item-foto img { width: 100%; height: 100%; object-fit: cover; }
+.item-info { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.item-info strong { font-size: .98rem; }
+.item-preco { font-size: .82rem; color: var(--texto-suave); }
+.tag-off { font-size: .78rem; color: var(--erro); font-weight: 600; }
+.item-qtd input {
+    width: 66px; padding: 9px; text-align: center; font-family: inherit; font-size: .95rem;
+    border: 1.5px solid var(--borda); border-radius: 9px; background: #fff;
+}
+.item-subtotal { font-weight: 700; font-size: 1.02rem; min-width: 92px; text-align: right; }
+.item-remover {
+    width: 34px; height: 34px; border-radius: 50%; border: none; cursor: pointer;
+    background: var(--creme-2); color: var(--texto-suave); font-size: 1rem;
+}
+.item-remover:hover { background: #fdecea; color: var(--erro); }
+.continuar { font-size: .9rem; color: var(--texto-suave); padding: 8px 0; }
+.continuar:hover { color: var(--cacau); }
+.resumo {
+    background: #fff; border: 1px solid var(--borda); border-radius: var(--radius);
+    padding: 24px; position: sticky; top: 88px;
+}
+.resumo h2 { font-size: 1.15rem; margin-bottom: 18px; }
+.linha-resumo { display: flex; justify-content: space-between; font-size: .94rem; margin-bottom: 11px; color: var(--texto-suave); }
+.gratis { color: var(--ok); font-weight: 700; font-style: normal; }
+.linha-total {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding-top: 15px; margin: 15px 0 20px; border-top: 1.5px solid var(--borda);
+    font-size: 1.3rem; font-weight: 700; color: var(--cacau);
+}
+.aviso-frete {
+    background: var(--creme-2); border-radius: 9px; padding: 10px 13px;
+    font-size: .84rem; margin: 0 0 14px; color: var(--texto-suave);
+}
+.seguro { text-align: center; font-size: .8rem; color: var(--texto-suave); margin: 12px 0 0; }
+.vazio-carrinho { text-align: center; padding: 70px 20px; }
+.emoji-vazio { font-size: 4rem; display: block; margin-bottom: 14px; opacity: .45; }
+.vazio-carrinho h2 { font-size: 1.4rem; margin-bottom: 8px; }
+.vazio-carrinho p { color: var(--texto-suave); margin-bottom: 24px; }
+@media (max-width: 860px) {
+    .carrinho-grade { grid-template-columns: 1fr; }
+    .resumo { position: static; }
+    .item { grid-template-columns: 60px 1fr auto; grid-template-areas: "foto info remover" "foto qtd subtotal"; row-gap: 10px; }
+    .item-foto { grid-area: foto; width: 60px; height: 60px; }
+    .item-info { grid-area: info; }
+    .item-qtd { grid-area: qtd; }
+    .item-subtotal { grid-area: subtotal; text-align: right; }
+    .item-remover { grid-area: remover; }
+}
+</style>
+{% endblock %}
